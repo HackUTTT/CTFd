@@ -2,6 +2,7 @@ version: '2'
 
 services:
   ctfd:
+    container_name: ctfd_main
     build: .
     user: root
     restart: always
@@ -37,6 +38,7 @@ services:
 #      - ctfd
 
   db:
+    container_name: ctfd_db
     image: mariadb:10.4.12
     restart: always
     environment:
@@ -52,12 +54,28 @@ services:
     command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --wait_timeout=28800, --log-warnings=0]
 
   cache:
+    container_name: ctfd_cache
     image: redis:4
     restart: always
     volumes:
     - .data/redis:/data
     networks:
         internal:
+
+  apache:
+    build: 
+      context: ./Gestion_VPN
+      dockerfile: Dockerfile
+    container_name: Apache_VPN
+    depends_on:
+      - db
+    volumes:
+      - ./Gestion_VPN/web:/var/www/html
+    ports:
+      - 8080:80   
+    networks:
+        default:
+        internal: 
 
 networks:
     default:
